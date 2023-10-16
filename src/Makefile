@@ -22,8 +22,8 @@
 #   https://github.com/dmoulding/boilermake
 #
 
-# TBD: Change to boilermake-cuda. Still including boilermake
-include Makefile.boilermake
+
+include Makefile.boilermake-cuda
 
 #
 #  Choose proper compilation mode.
@@ -201,7 +201,7 @@ define SET_DEFAULT_FLAGS
     ifeq ($$(MODE), cuda)
       CFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include
       CXXFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include
-      CUDAFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include -std=c++17
+      CUDAFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include -std=c++20
     else
       CFLAGS += -pthread -fopenmp -fPIC
       CXXFLAGS += -pthread -fopenmp -fPIC
@@ -305,7 +305,6 @@ define FIND_MACOS_COMPILER
   ifeq ($$(CC), cc)
   ifneq ($$(wildcard $${BREW}/opt/gcc@${1}/bin/gcc-${1}), )
   ifneq ($$(wildcard $${BREW}/opt/gcc@${1}/bin/g++-${1}), )
-    #$$(info Detected gcc-${1} installed via Homebrew.)
     CC=$$(abspath $${BREW}/opt/gcc@${1}/bin/gcc-${1})
     CXX=$$(abspath $${BREW}/opt/gcc@${1}/bin/g++-${1})
   endif
@@ -315,7 +314,6 @@ define FIND_MACOS_COMPILER
   ifeq ($$(CC), cc)
   ifneq ($$(wildcard $${BREW}/opt/llvm@${1}/bin/clang), )
   ifneq ($$(wildcard $${BREW}/opt/llvm@${1}/bin/clang++), )
-    #$$(info Detected llvm-${1} installed via Homebrew.)
     CC=$$(abspath $${BREW}/opt/llvm@${1}/bin/clang)
     CXX=$$(abspath $${BREW}/opt/llvm@${1}/bin/clang++)
   endif
@@ -325,7 +323,6 @@ define FIND_MACOS_COMPILER
   ifeq ($$(CC), cc)
   ifneq ($$(wildcard $${PORT}/bin/gcc-mp-${1}), )
   ifneq ($$(wildcard $${PORT}/bin/g++-mp-${1}), )
-    #$$(info Detected gcc-${1} installed via MacPorts.)
     CC=$$(abspath $${PORT}/bin/gcc-mp-${1})
     CXX=$$(abspath $${PORT}/bin/g++-mp-${1})
   endif
@@ -335,7 +332,6 @@ define FIND_MACOS_COMPILER
   ifeq ($$(CC), cc)
   ifneq ($$(wildcard $${PORT}/bin/clang-mp-${1}), )
   ifneq ($$(wildcard $${PORT}/bin/clang++-mp-${1}), )
-    #$$(info Detected llvm-${1} installed via MacPorts.)
     CC=$$(abspath $${PORT}/bin/clang-mp-${1})
     CXX=$$(abspath $${PORT}/bin/clang++-mp-${1})
   endif
