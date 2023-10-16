@@ -153,6 +153,11 @@ SRC_INCDIRS  := utility/src \
                 overlapInCore \
                 overlapInCore/liboverlap
 
+SRC_CUDA_INCDIRS    :=  utility/src \
+                        stores \
+                        stores/libsnappy \
+                        overlapInCore \
+                        overlapInCore/liboverlap
 
 SUBMAKEFILES := stores/dumpBlob.mk \
                 stores/ovStoreBuild.mk \

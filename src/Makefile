@@ -22,33 +22,44 @@
 #   https://github.com/dmoulding/boilermake
 #
 
+# TBD: Change to boilermake-cuda. Still including boilermake
 include Makefile.boilermake
+
+#
+#  Choose proper compilation mode.
+#  Version with CUDA support only available under Linux. 
+#
+
+ifeq ($$(origin MODE), undefined)
+  MODE := omp
+else ifneq ($$(OSTYPE), linux)
+  MODE := omp
+endif
 
 #
 #  Check that Make and git are compatible, fail if not.
 #
 
-define TEST_VERSION
-  path   := $$(shell which ${1})
-  vers   := $$(shell ${1}     --version | head -n 1 | cut -d\  -f ${2})
-  versn  := $$(shell echo $${vers} | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$$$/&00/')
-  min    := $$(shell echo ${3}     | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$$$/&00/')
+define CHECK_MODULE_VERSION
+  module          := $$(shell which ${1})
+  version         := $$(shell ${1}     --version | head -n 1 | cut -d\  -f ${2})
+  version_number  := $$(shell echo $${version} | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$$$/&00/')
+  minimum         := $$(shell echo ${3}     | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$$$/&00/')
 
-  ifeq ($$(shell expr $${versn} \>= $${min}), 0)
-    $$(error '$${path}' version '$${vers}' too old; at least version $3 is required)
+  ifeq ($$(shell expr $${version_number} \>= $${minimum}), 0)
+    $$(error '$${module}' version '$${version}' too old; at least version $3 is required)
   endif
 endef
 
-$(eval $(call TEST_VERSION, git,     3, 2.12))
-$(eval $(call TEST_VERSION, ${MAKE}, 3, 3.81))
+$(eval $(call CHECK_MODULE_VERSION, git,     3, 2.12))
+$(eval $(call CHECK_MODULE_VERSION, ${MAKE}, 3, 3.81))
 
 #
 #  Initialize submodules if they aren't here yet.
 #   - if the submodule directory exists and it is empty, then have
 #     git fetch the submodule (with some fancy logging).
 #
-
-define INIT_SUBMODULE
+define GET_DEPENDENCIES
   ifeq ($$(wildcard ${1}),${1})
   ifeq ($$(wildcard ${1}/*),)
     $$(info Fetching submodule '${1}')
@@ -58,9 +69,43 @@ define INIT_SUBMODULE
   endif
 endef
 
-$(eval $(call INIT_SUBMODULE,utility))
-$(eval $(call INIT_SUBMODULE,meryl))
-$(eval $(call INIT_SUBMODULE,seqrequester))
+$(eval $(call GET_DEPENDENCIES, utility))
+$(eval $(call GET_DEPENDENCIES, meryl))
+$(eval $(call GET_DEPENDENCIES, seqrequester))
+
+#
+#  Check NVIDIA drivers & available architecture
+#
+define CHECK_CUDA_SUPPORT
+    nvcc_path             := $$(shell which nvcc)
+
+    ifneq ($$(nvcc_path), undefined)
+      nvcc_version        := $$(shell $${nvcc_path} --version)
+      nvidia_gpu          := $$(shell lspci | grep VGA)
+
+      MODE                := cuda
+      GPU_SUPPORTED       := yes
+    else
+      MODE                := omp
+      GPU_SUPPORTED       := no
+    endif
+endef
+
+#
+#  Set proper compilers.
+#
+define SET_COMPILER
+  ifeq ($$(MODE), cuda)
+    nvcc_path   := $$(shell which nvcc)
+
+    CC          ?= $${nvcc_path}
+    NVCC        ?= $${nvcc_path}
+    CXX         ?= $${nvcc_path}
+  else
+    CC          ?= gcc
+    CXX         ?= g++
+  endif
+endef
 
 #
 #  Set compiler and flags based on operating system and compiler toolchain.
@@ -153,6 +198,15 @@ define SET_DEFAULT_FLAGS
     CXXFLAGS += -Wno-unused-variable
     CXXFLAGS += -Wno-deprecated-declarations
 
+    ifeq ($$(MODE), cuda)
+      CFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include
+      CXXFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include
+      CUDAFLAGS += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include -std=c++17
+    else
+      CFLAGS += -pthread -fopenmp -fPIC
+      CXXFLAGS += -pthread -fopenmp -fPIC
+    endif
+
     ifeq ($$(TOOLCHAIN), Clang)
       CFLAGS   += -Wno-format
 
@@ -177,17 +231,16 @@ endef
 #  Linux config.
 #
 ifeq (${OSTYPE}, Linux)
-  CC        ?= gcc
-  CXX       ?= g++
-
   BUILDSTACKTRACE ?= 1
 
-  $(eval $(call SET_DEFAULT_FLAGS,))
+  ifeq (${MODE}, cuda)
+    LDFLAGS   += -lcublas -lcuda -lcudart -I/usr/lib/cuda/include -L/usr/lib/cuda/include
+  else
+    LDFLAGS   += -pthread -fopenmp -lm
+  endif
 
-  CXXFLAGS  += -pthread -fopenmp -fPIC
-  CFLAGS    += -pthread -fopenmp -fPIC
-
-  LDFLAGS   += -pthread -fopenmp -lm
+  $(eval $(call SET_COMPILER))
+  $(eval $(call SET_DEFAULT_FLAGS))
 endif
 
 
@@ -208,26 +261,21 @@ endif
 #    endif
 #
 ifeq (${OSTYPE}, FreeBSD)
-ifeq (${CANU_BUILD_ENV}, ports)
-  MACHINETYPE=${ARCH}
+  ifeq (${CANU_BUILD_ENV}, ports)
+    MACHINETYPE=${ARCH}
 
-  CXXFLAGS  += -pthread -fopenmp -fPIC
-  CFLAGS    += -pthread -fopenmp -fPIC
+    CXXFLAGS  += -pthread -fopenmp -fPIC
+    CFLAGS    += -pthread -fopenmp -fPIC
 
-  LDFLAGS   += -pthread -fopenmp
-else
-  CC        ?= cc
-  CXX       ?= c++
+    LDFLAGS   += -pthread -fopenmp
+  else
+    BUILDSTACKTRACE ?= 1
 
-  BUILDSTACKTRACE ?= 1
+    $(eval $(call SET_COMPILER,))
+    $(eval $(call SET_DEFAULT_FLAGS,))
 
-  $(eval $(call SET_DEFAULT_FLAGS,))
-
-  CXXFLAGS  += -pthread -fopenmp -fPIC
-  CFLAGS    += -pthread -fopenmp -fPIC
-
-  LDFLAGS   += -L/usr/local/lib     -pthread -fopenmp -lm -lexecinfo
-endif
+    LDFLAGS   += -L/usr/local/lib     -pthread -fopenmp -lm -lexecinfo
+  endif
 endif
 
 
@@ -295,12 +343,13 @@ define FIND_MACOS_COMPILER
   endif
 endef
 
+
+#
+#  Darwin config.
+#
 ifeq (${OSTYPE}, Darwin)
   BREW := $(abspath $(lastword $(shell brew 2>/dev/null config | grep HOMEBREW_PREFIX)))
   PORT := $(abspath $(dir $(abspath $(dir $(shell which port)))))
-
-  #$(info Detected Homebrew in '${BREW}')
-  #$(info Detected MacPorts in '${PORT}')
 
   $(eval $(call FIND_MACOS_COMPILER,20))
   $(eval $(call FIND_MACOS_COMPILER,19))
@@ -329,9 +378,7 @@ endif
 #  Cygwin config.
 #
 ifneq (,$(findstring CYGWIN, ${OSTYPE}))
-  CC        ?= gcc
-  CXX       ?= g++
-
+  $(eval $(call SET_COMPILER,))
   $(eval $(call SET_DEFAULT_FLAGS,))
 
   CXXFLAGS  := -fopenmp -pthread
@@ -371,7 +418,7 @@ endif
 # Recursively include user-supplied submakefiles.
 #
 
-$(eval $(call INCLUDE_SUBMAKEFILE,main.mk))
+$(eval $(call INCLUDE_SUBMAKEFILE, main.mk))
 
 #
 # Define the two exported targets: 'all' (default) and 'clean'.
@@ -424,11 +471,15 @@ include ${VERSION_H}
 #
 #  Log what compiler we're using and start the build.
 #
-
+$(info )
 $(info ${BUILDING})
 $(info For '${OSTYPE}' '${OSVERSION}' as '${MACHINETYPE}' into '${TARGET_DIR}/{bin,obj}'.)
 $(info Using ${TOOLCHAIN} '$(shell which ${CXX})' version '${TOOLCHAINVERSION}'.)
+$(info Using compilers: '${CC}' '${CXX}' '${NVCC}'.)
+$(info Using linker flags: '${LDFLAGS}')
+$(info Using flags: ${CFLAGS} ${CXXFLAGS} ${CUDAFLAGS})
+$(info Compilation mode: '${MODE}'.)
 ifneq ($(origin CXXFLAGSUSER), undefined)
-$(info Using user-supplied CXXFLAGS '${CXXFLAGSUSER}'.)
+  $(info Using user-supplied CXXFLAGS '${CXXFLAGSUSER}'.)
 endif
 $(info )

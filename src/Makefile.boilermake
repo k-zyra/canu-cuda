@@ -1,8 +1,7 @@
 # -*- Makefile -*-
 #
-# boilermake: A reusable, but flexible, boilerplate Makefile.
-#
-# Copyright 2008, 2009, 2010 Dan Moulding, Alan T. DeKok
+# boilermake-cuda: An extension for boilermake with CUDA support.
+# Copyright 2023 Karolina Zyra
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,12 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 #
-# Significantly modified for Marbl projects.  Get the original from
+# Forked from boilermake: A reusable, but flexible boilerplate Makefile.
 #   https://github.com/dmoulding/boilermake
 #
-
+# Copyright 2008, 2009, 2010 Dan Moulding, Alan T. DeKok
+#
 
 #
 #  Set paths for building and installing.  If DESTDIR is defined,
@@ -42,16 +43,18 @@ else
 endif
 
 OSTYPE      :=                      $(shell echo `uname`)
-OSVERSION   :=                      $(shell echo `uname -r`))
+OSVERSION   :=                      $(shell echo `uname -r`)
 MACHINETYPE := $(subst x86_64,amd64,$(shell echo `uname -m`))
+NVCC        :=                      $(shell which nvcc)
 
 #
 # Define the source file extensions that we know how to handle.
 #
-C_SRC_EXTS   := %.c
-CXX_SRC_EXTS := %.C %.cc %.cp %.cpp %.CPP %.cxx %.c++
-JAVA_EXTS    := %.jar %.tar
-ALL_SRC_EXTS := ${C_SRC_EXTS} ${CXX_SRC_EXTS} ${JAVA_EXTS}
+C_SRC_EXTS    := %.c
+CXX_SRC_EXTS  := %.C %.cc %.cp %.cpp %.CPP %.cxx %.c++
+CUDA_SRC_EXTS := %.cu
+JAVA_EXTS     := %.jar %.tar
+ALL_SRC_EXTS  := ${C_SRC_EXTS} ${CXX_SRC_EXTS} ${CUDA_SRC_EXTS} ${JAVA_EXTS}
 
 #
 # Initialize internal variables.
@@ -85,6 +88,12 @@ define BOILERMAKE
     $(foreach EXT,${CXX_SRC_EXTS},\
       $(eval $(call ADD_OBJECT_RULE,${BUILD_DIR}/$(call CANONICAL_PATH,${TGT}),\
                ${EXT},$${COMPILE_CXX_CMDS}))))
+
+  # Add pattern rule(s) for creating compiled object code from CUDA source.
+  $(foreach TGT,${ALL_TGTS},\
+    $(foreach EXT,${CUDA_SRC_EXTS},\
+      $(eval $(call ADD_OBJECT_RULE,${BUILD_DIR}/$(call CANONICAL_PATH,${TGT}),\
+               ${EXT},$${COMPILE_CUDA_CMDS}))))
 
   # Add "clean" rules to remove all build-generated files.
   $(foreach TGT,${ALL_TGTS},\
@@ -251,6 +260,17 @@ define COMPILE_CXX_CMDS
 	 rm -f ${@:%$(suffix $@)=%.d}
 endef
 
+# COMPILE_CUDA_CMDS - Commands for compiling CUDA source code.
+define COMPILE_CUDA_CMDS
+	@mkdir -p $(dir $@)
+	$(strip ${NVCC} -o $@ -ccbin=${CXX} -c -MD ${CUDAFLAGS} ${SRC_CUDAFLAGS} ${SRC_CUDA_INCDIRS} ${EXT_CUDA_INCDIRS} ${SRC_DEFS} $<)
+	@cp ${@:%$(suffix $@)=%.d} ${@:%$(suffix $@)=%.P}; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < ${@:%$(suffix $@)=%.d} \
+	     >> ${@:%$(suffix $@)=%.P}; \
+	 rm -f ${@:%$(suffix $@)=%.d}
+endef
+
 # INCLUDE_SUBMAKEFILE - Parameterized "function" that includes a new
 #   "submakefile" fragment into the overall Makefile. It also recursively
 #   includes all submakefiles of the specified submakefile fragment.
@@ -266,15 +286,18 @@ define INCLUDE_SUBMAKEFILE
     TGT_LINKER    :=
     TGT_PREREQS   :=
 
-    SOURCES       :=
-    SRC_CFLAGS    :=
-    SRC_CXXFLAGS  :=
-    SRC_DEFS      :=
-    SRC_INCDIRS   :=
+    SOURCES           :=
+    SRC_CFLAGS        :=
+    SRC_CXXFLAGS      :=
+    SRC_CUDAFLAGS     :=
+    SRC_DEFS          :=
+    SRC_INCDIRS       :=
+    SRC_CUDA_INCDIRS  :=
 
-    EXT_INCDIRS   :=
+    EXT_INCDIRS       :=
+    EXT_CUDA_INCDIRS  :=
 
-    SUBMAKEFILES  :=
+    SUBMAKEFILES      :=
 
     # A directory stack is maintained so that the correct paths are used as we
     # recursively include all submakefiles. Get the makefile's directory and
@@ -331,8 +354,12 @@ define INCLUDE_SUBMAKEFILE
         SOURCES     := $$(call CANONICAL_PATH,$${SOURCES})
         SRC_INCDIRS := $$(call QUALIFY_PATH,$${DIR},$${SRC_INCDIRS})
         SRC_INCDIRS := $$(call CANONICAL_PATH,$${SRC_INCDIRS})
+        SRC_CUDA_INCDIRS  := $$(call QUALIFY_PATH,$${DIR},$${SRC_CUDA_INCDIRS})
+        SRC_CUDA_INCDIRS  := $$(call CANONICAL_PATH,$${SRC_CUDA_INCDIRS})
         EXT_INCDIRS := $$(call QUALIFY_PATH,$${DIR},$${EXT_INCDIRS})
         EXT_INCDIRS := $$(call CANONICAL_PATH,$${EXT_INCDIRS})
+        EXT_CUDA_INCDIRS  := $$(call QUALIFY_PATH,$${DIR},$${EXT_CUDA_INCDIRS})
+        EXT_CUDA_INCDIRS  := $$(call CANONICAL_PATH,$${EXT_CUDA_INCDIRS})
 
         # Save the list of source files for this target.
         $${TGT}_SOURCES += $${SOURCES}
@@ -347,11 +374,14 @@ define INCLUDE_SUBMAKEFILE
         # variables that were defined.
         $${TGT}_OBJS += $${OBJS}
         $${TGT}_DEPS += $${OBJS:%.o=%.P}
-        $${OBJS}: SRC_CFLAGS   := $${SRC_CFLAGS}
-        $${OBJS}: SRC_CXXFLAGS := $${SRC_CXXFLAGS}
-        $${OBJS}: SRC_DEFS     := $$(addprefix -D,$${SRC_DEFS})
-        $${OBJS}: SRC_INCDIRS  := $$(addprefix -iquote,$${SRC_INCDIRS})
-        $${OBJS}: EXT_INCDIRS  := $$(addprefix -isystem,$${EXT_INCDIRS})
+        $${OBJS}: SRC_CFLAGS        := $${SRC_CFLAGS}
+        $${OBJS}: SRC_CXXFLAGS      := $${SRC_CXXFLAGS}
+        $${OBJS}: SRC_CUDAFLAGS     := $${SRC_CUDAFLAGS}
+        $${OBJS}: SRC_DEFS          := $$(addprefix -D,$${SRC_DEFS})
+        $${OBJS}: SRC_INCDIRS       := $$(addprefix -iquote,$${SRC_INCDIRS})
+        $${OBJS}: EXT_INCDIRS       := $$(addprefix -isystem,$${EXT_INCDIRS})
+        $${OBJS}: SRC_CUDA_INCDIRS  := $$(addprefix -isystem=, $${SRC_CUDA_INCDIRS})
+        $${OBJS}: EXT_CUDA_INCDIRS  := $$(addprefix -isystem=, $${EXT_CUDA_INCDIRS})
     endif
 
     ifneq "$$(strip $${SUBMAKEFILES})" ""
