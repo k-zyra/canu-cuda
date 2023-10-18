@@ -86,8 +86,8 @@ prefixEditDistance::Allocate_More_Edit_Space(int32 ein) {
 #ifdef DEBUG_EDIT_SPACE_ALLOC
   Edit_Space_Lazy_Max = e-1;
 
-  fprintf(stdout, "WorkArea %2d allocates space %d (for e=%d) of size %d for array %d through %d\n",
-          omp_get_thread_num(), a, ein, Size, b, e-1);
+  // fprintf(stdout, "WorkArea %2d allocates space %d (for e=%d) of size %d for array %d through %d\n",
+  //         omp_get_thread_num(), a, ein, Size, b, e-1);
 #endif
 }
 

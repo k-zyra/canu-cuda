@@ -923,7 +923,7 @@ unitigConsensus::generatePBDAG(tgTig                       *tig_,
   uint32        pass = 0;
   uint32        fail = 0;
 
-#pragma omp parallel for schedule(dynamic)
+// #pragma omp parallel for schedule(dynamic)
   for (uint32 ii=0; ii<_numReads; ii++) {
     abSequence  *seq      = getSequence(ii);
     bool         aligned  = false;
@@ -1181,7 +1181,7 @@ unitigConsensus::findCoordinates(void) {
 
   int32         alignShift = 0;
 
-#pragma omp parallel for schedule(dynamic)
+// #pragma omp parallel for schedule(dynamic)
   for (uint32 ii=0; ii<_numReads; ii++) {
     abSequence   *read    = getSequence(ii);
     char         *readSeq = read->getBases();
@@ -1354,7 +1354,7 @@ unitigConsensus::findCoordinates(void) {
       if (showPlacement())
         fprintf(stderr, "  SUCCESS aligned to %d %d at %f\n", abgn, aend, 100.0 * align.editDistance / align.alignmentLength);
 
-#pragma omp critical (tgTigLoadAlign)
+// #pragma omp critical (tgTigLoadAlign)
       {
         _tig->getChild(ii)->_deltaOffset = _tig->_childDeltaBits->getPosition();
         _tig->getChild(ii)->_deltaLen    = edlibAlignmentToCanu(_tig->_childDeltaBits,

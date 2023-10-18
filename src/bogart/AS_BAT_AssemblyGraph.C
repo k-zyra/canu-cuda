@@ -153,7 +153,7 @@ AssemblyGraph::buildGraph(const char   *UNUSED(prefix),
 
   //  Do the placing!
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fi=1; fi<RI->numReads()+1; fi++) {
     uint32   fiTigID = tigs.inUnitig(fi);
 

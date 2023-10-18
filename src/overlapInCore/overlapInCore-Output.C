@@ -181,7 +181,7 @@ Output_Overlap(uint32 S_ID, int S_Len, Direction_t S_Dir,
   //  They're also written at the end of the thread.
 
   if (WA->overlapsLen >= WA->overlapsMax)
-#pragma omp critical
+// #pragma omp critical
     {
       for (int32 zz=0; zz<WA->overlapsLen; zz++)
         Out_BOF->writeOverlap(WA->overlaps + zz);
@@ -255,7 +255,7 @@ Output_Partial_Overlap(uint32 s_id,
   //  We also flush the file at the end of a thread
 
   if (WA->overlapsLen >= WA->overlapsMax) {
-#pragma omp critical
+// #pragma omp critical
     for (int32 zz=0; zz<WA->overlapsLen; zz++)
       Out_BOF->writeOverlap(WA->overlaps + zz);
 

@@ -787,7 +787,7 @@ processGFA(char     *tigName,
          gfa->_sequences[ii]->_sequence[(*seqsp)[gfa->_sequences[ii]->_id].len] = 0;
       }
    }
-#pragma omp parallel for schedule(dynamic, iiBlockSize)
+// #pragma omp parallel for schedule(dynamic, iiBlockSize)
    for (uint32 ii=0; ii<gfa->_sequences.size(); ii++) { 
       if (gfa->_sequences[ii] != NULL) { 
          // update where the old sequences ends within our bounds too
@@ -807,7 +807,7 @@ processGFA(char     *tigName,
 
   fprintf(stderr, "-- Resetting sequence lengths.\n");
 
-#pragma omp parallel for schedule(dynamic, iiBlockSize)
+// #pragma omp parallel for schedule(dynamic, iiBlockSize)
   for (uint32 ii=0; ii<gfa->_sequences.size(); ii++) {
     if  (gfa->_sequences[ii] == NULL)
        continue;
@@ -827,7 +827,7 @@ processGFA(char     *tigName,
 
   fprintf(stderr, "-- Aligning " F_U32 " links using " F_U32 " threads and %.2f error rate.\n", iiLimit, iiNumThreads, erate*100);
 
-#pragma omp parallel for schedule(dynamic, iiBlockSize)
+// #pragma omp parallel for schedule(dynamic, iiBlockSize)
   for (uint32 ii=0; ii<iiLimit; ii++) {
     gfaLink *link = gfa->_links[ii];
 
@@ -944,7 +944,7 @@ processBED(char   *tigName,
 
   fprintf(stderr, "-- Aligning " F_U32 " records using " F_U32 " threads.\n", iiLimit, iiNumThreads);
 
-#pragma omp parallel for schedule(dynamic, iiBlockSize)
+// #pragma omp parallel for schedule(dynamic, iiBlockSize)
   for (uint32 ii=0; ii<iiLimit; ii++) {
     bedRecord *record = bed->_records[ii];
 
@@ -1013,7 +1013,7 @@ processBEDtoGFA(char   *tigName,
 
   fprintf(stderr, "-- Aligning " F_U32 " records using " F_U32 " threads.\n", iiLimit, iiNumThreads);
 
-#pragma omp parallel for schedule(dynamic, iiBlockSize)
+// #pragma omp parallel for schedule(dynamic, iiBlockSize)
   for (uint64 ii=0; ii<bed->_records.size(); ii++) {
     for (uint64 jj=ii+1; jj<bed->_records.size(); jj++) {
 
@@ -1050,7 +1050,7 @@ processBEDtoGFA(char   *tigName,
 
       bool  pN = checkLink(link, seqs, seqs_orig, erate, (verbosity > 0), false);
 
-#pragma omp critical
+// #pragma omp critical
       {
         if (pN)
           gfa->_links.push_back(link);

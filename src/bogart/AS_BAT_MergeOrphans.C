@@ -382,7 +382,7 @@ findOrphanReadPlacements(TigVector       &tigs,
   writeLog("== Finding Read Placements for Potential Orphans ==\n");
   writeLog("\n");
 
-#pragma omp parallel for schedule(dynamic, fiBlockSize)
+// #pragma omp parallel for schedule(dynamic, fiBlockSize)
   for (uint32 fi=1; fi<fiLimit; fi++) {
     uint32     rdAtigID = tigs.inUnitig(fi);
 

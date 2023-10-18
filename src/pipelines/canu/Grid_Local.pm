@@ -60,9 +60,9 @@ sub getNumberOfCPUs () {
 
     #  See src/utility/src/utility/system.C
 
-    if (exists($ENV{"OMP_NUM_THREADS"})) {
-        $ncpu = $ENV{"OMP_NUM_THREADS"};
-    }
+    # if (exists($ENV{"OMP_NUM_THREADS"})) {
+    #     $ncpu = $ENV{"OMP_NUM_THREADS"};
+    # }
 
     if (exists($ENV{"SLURM_JOB_CPUS_PER_NODE"})) {
         $ncpu = $ENV{"SLURM_JOB_CPUS_PER_NODE"};

@@ -89,7 +89,7 @@ Process_Overlaps(void *ptr){
 
     //  Flush any remaining overlaps and update statistics.
 
-#pragma omp critical
+// #pragma omp critical
     {
       for (int zz=0; zz<WA->overlapsLen; zz++)
         Out_BOF->writeOverlap(WA->overlaps + zz);

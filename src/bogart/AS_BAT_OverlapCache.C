@@ -663,7 +663,7 @@ OverlapCache::symmetrizeOverlaps(void) {
   //  b-read has loaded all overlaps (the overlap we're searching for must exist) but we can't.
   //  We must still mark the overlap as being symmetric.
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 ra=0; ra < fiLimit; ra++) {
     for (uint32 oa=0; oa<_overlapLen[ra]; oa++) {
       BAToverlap  *ova = &_overlaps[ra][oa];
@@ -730,7 +730,7 @@ OverlapCache::symmetrizeOverlaps(void) {
         fprintf(NTW, "NO TWIN for %6u -> %6u - length %lu >= min %lu\n",
                 ra, ova->b_iid, ovlScoToLength(osco), ovlScoToLength(_minSco[rb]));
 
-#pragma omp critical (nMissPerRead)
+// #pragma omp critical (nMissPerRead)
       nMissPerRead[rb]++;
     }
   }
@@ -905,7 +905,7 @@ OverlapCache::symmetrizeOverlaps(void) {
 
   writeStatus("OverlapCache()--   Sorting overlaps.\n");
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 rr=0; rr < fiLimit; rr++)
     if (_overlapLen[rr] > 0)
       std::sort(_overlaps[rr], _overlaps[rr] + _overlapLen[rr], [](BAToverlap const &a, BAToverlap const &b) {
@@ -915,7 +915,7 @@ OverlapCache::symmetrizeOverlaps(void) {
 
   writeStatus("OverlapCache()--   Checking overlap symmetry.\n");
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 ra=0; ra < fiLimit; ra++) {
     for (uint32 oa=0; oa<_overlapLen[ra]; oa++) {
       BAToverlap  *ova = &_overlaps[ra][oa];

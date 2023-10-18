@@ -299,7 +299,7 @@ alignReadsToTemplate(falconInput    *evidence,
 
   //  For the rest of the evidence: align, parse, add.
 
-#pragma omp parallel for schedule(dynamic)
+// #pragma omp parallel for schedule(dynamic)
   for (uint32 j=1; j<evidenceLen; j++) {
     if (evidence[j].readLength < minOlapLength)
       continue;

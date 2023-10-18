@@ -170,7 +170,7 @@ OverlapDriver(void) {
 
   fprintf(stderr, "Initializing %u work areas.\n", G.Num_PThreads);
 
-#pragma omp parallel for
+// #pragma omp parallel for
   for (uint32 i=0;  i<G.Num_PThreads;  i++)
     Initialize_Work_Area(thread_wa+i, i, readStore, readCache);
 
@@ -244,7 +244,7 @@ OverlapDriver(void) {
       G.curRefID = thread_wa[i].endID + 1;  //  Global value updated!
     }
 
-#pragma omp parallel for
+// #pragma omp parallel for
     for (uint32 i=0; i<G.Num_PThreads; i++)
       Process_Overlaps(thread_wa + i);
 

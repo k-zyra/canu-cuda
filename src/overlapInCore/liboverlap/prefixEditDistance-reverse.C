@@ -148,7 +148,7 @@ prefixEditDistance::reverse(char    *A,   int32 m,
     Leftover = m;
     Match_To_End = true;
 #ifdef SHOW_BRI
-    fprintf(stderr, "WorkArea %2d REV exact match\n", omp_get_thread_num());
+    // fprintf(stderr, "WorkArea %2d REV exact match\n", omp_get_thread_num());
 #endif
     return  0;
   }
@@ -205,8 +205,8 @@ prefixEditDistance::reverse(char    *A,   int32 m,
           abort = true;
 
 #ifdef SHOW_EXTEND_ALIGN
-        fprintf(stderr, "WorkArea %2d REV e=%d MIN=%d Tail_Len=%d Max_Score=%f Score=%f slope=%f SLOPE=%f\n",
-                omp_get_thread_num(), e, MIN_BRANCH_END_DIST, Tail_Len, Max_Score, Score, slope, MIN_BRANCH_TAIL_SLOPE);
+        // fprintf(stderr, "WorkArea %2d REV e=%d MIN=%d Tail_Len=%d Max_Score=%f Score=%f slope=%f SLOPE=%f\n",
+        //         omp_get_thread_num(), e, MIN_BRANCH_END_DIST, Tail_Len, Max_Score, Score, slope, MIN_BRANCH_TAIL_SLOPE);
 #endif
 
         if ((e > MIN_BRANCH_END_DIST / 2) &&
@@ -274,7 +274,7 @@ prefixEditDistance::reverse(char    *A,   int32 m,
 
     if  (Left > Right) {
 #ifdef SHOW_EXTEND_ALIGN
-      fprintf(stderr, "WorkArea %2d REV BREAK at Left=%d Right=%d\n", omp_get_thread_num(), Left, Right);
+      // fprintf(stderr, "WorkArea %2d REV BREAK at Left=%d Right=%d\n", omp_get_thread_num(), Left, Right);
 #endif
       break;
     }
@@ -316,7 +316,7 @@ prefixEditDistance::reverse(char    *A,   int32 m,
   }
 
 #ifdef SHOW_EXTEND_ALIGN
-  fprintf(stderr, "WorkArea %2d REV ERROR_LIMIT at e=%d Error_Limit=%d best_e=%d\n", omp_get_thread_num(), e, Error_Limit, Max_Score_Best_e);
+  // fprintf(stderr, "WorkArea %2d REV ERROR_LIMIT at e=%d Error_Limit=%d best_e=%d\n", omp_get_thread_num(), e, Error_Limit, Max_Score_Best_e);
 #endif
 
   A_End = - Max_Score_Len;

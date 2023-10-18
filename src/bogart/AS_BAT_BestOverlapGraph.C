@@ -340,7 +340,7 @@ logCovGapRead(FILE *F, uint32 fi, intervalList<int32> &IL, bool dove5, bool dove
   log[lp++] = '\n';
   log[lp++] =  0;
 
-#pragma omp critical (covGapPrint)
+// #pragma omp critical (covGapPrint)
   fputs(log, F);
 }
 
@@ -368,7 +368,7 @@ BestOverlapGraph::removeReadsWithCoverageGap(const char *prefix, covgapType ct, 
   //  Search for reads that have an internal region with no coverage.
   //  If found, flag these as _coverageGap.
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fi=1; fi <= fiLimit; fi++) {
     uint32               fLen = RI->readLength(fi);
     uint32               no   = 0;
@@ -493,7 +493,7 @@ BestOverlapGraph::removeLopsidedEdges(const char *prefix, const char *label, dou
 
   FILE  *LOP = merylutil::openOutputFile(prefix, '.', label, logFileFlagSet(LOG_BEST_EDGES));
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fi=1; fi <= fiLimit; fi++) {
 
     if ((isIgnored(fi)     == true) ||   //  Skip ignored and contain, because we don't care
@@ -600,7 +600,7 @@ BestOverlapGraph::removeLopsidedEdges(const char *prefix, const char *label, dou
       //          this3->readId(), this3->read3p() ? '3' : '5', this3ovlLen, back3->readId(), back3->read3p() ? '3' : '5', back3ovlLen, score3);
 
       if (loplog[0] != 0)
-#pragma omp critical (fprintf_LOP)
+// #pragma omp critical (fprintf_LOP)
         fputs(loplog, LOP);
     }
   }
@@ -1158,7 +1158,7 @@ BestOverlapGraph::findContains(void) {
   //  Check all overlaps and flag any reads that are in a containment
   //  relationship.
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fi=1; fi <= fiLimit; fi++) {
     uint32      no  = 0;
     BAToverlap *ovl = OC->getOverlaps(fi, no);
@@ -1210,7 +1210,7 @@ BestOverlapGraph::findEdges(bool redoAll) {
   //  For each read, score every overlap, remembering which is the best for each end.
   //  Only reads without existing best overlaps are computed, unless redoAll is set.
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fi=1; fi <= fiLimit; fi++) {
     if ((isIgnored(fi)     == true) ||         //  Ignore ignored reads.
         (isContained(fi)   == true) ||         //  Ignore contained reads.

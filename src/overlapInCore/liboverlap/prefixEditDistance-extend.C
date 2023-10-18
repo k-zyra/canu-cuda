@@ -149,7 +149,7 @@ prefixEditDistance::Extend_Alignment(Match_Node_t *Match,
   assert(Errors       <= Error_Limit);
 
 #ifdef SHOW_EXTEND_ALIGN
-  fprintf(stderr, "WorkArea %2d OVERLAP %6d %6d - %5d + %5d = %5d errors\n", omp_get_thread_num(), S_ID, T_ID, Left_Errors, Right_Errors, Errors);
+  // fprintf(stderr, "WorkArea %2d OVERLAP %6d %6d - %5d + %5d = %5d errors\n", omp_get_thread_num(), S_ID, T_ID, Left_Errors, Right_Errors, Errors);
 #endif
 
   //  No overlap if both right and left don't match to end, otherwise a branch point if only one.

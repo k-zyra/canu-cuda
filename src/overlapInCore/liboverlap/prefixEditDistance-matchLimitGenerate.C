@@ -84,7 +84,7 @@ main(int argc, char **argv) {
   sprintf(D, "prefixEditDistance-matchLimitData-BITS=%01d", AS_MAX_READLEN_BITS);
   AS_UTL_mkdir(D);
 
-#pragma omp parallel for schedule(dynamic, 1)
+// #pragma omp parallel for schedule(dynamic, 1)
   for (int32 evalue=maxEvalue; evalue>=minEvalue; evalue -= step) {
     char    N[FILENAME_MAX];  //  Local to this thread!
 
@@ -101,8 +101,8 @@ main(int argc, char **argv) {
     sprintf(N, "%s/prefixEditDistance-matchLimit-%04d.bin", D, evalue);
 
     if (fileExists(N)) {
-      fprintf(stderr, "eValue %04d -- eRate %6.4f -- %7.4f%% error -- %8d values -- thread %2d - LOAD\n",
-              evalue, erate, erate * 100.0, MAX_ERRORS, omp_get_thread_num());
+      // fprintf(stderr, "eValue %04d -- eRate %6.4f -- %7.4f%% error -- %8d values -- thread %2d - LOAD\n",
+              // evalue, erate, erate * 100.0, MAX_ERRORS, omp_get_thread_num());
 
       errno = 0;
       FILE *F = fopen(N, "r");
@@ -122,8 +122,8 @@ main(int argc, char **argv) {
       fclose(F);
 
     } else {
-      fprintf(stderr, "eValue %04d -- eRate %6.4f -- %7.4f%% error -- %8d values -- thread %2d - COMPUTE\n",
-              evalue, erate, erate * 100.0, MAX_ERRORS, omp_get_thread_num());
+      // fprintf(stderr, "eValue %04d -- eRate %6.4f -- %7.4f%% error -- %8d values -- thread %2d - COMPUTE\n",
+      //         evalue, erate, erate * 100.0, MAX_ERRORS, omp_get_thread_num());
 
       for (int32 e=ERRORS_FOR_FREE + 1; e<MAX_ERRORS; e++) {
         start = Binomial_Bound(e - ERRORS_FOR_FREE, erate, start);

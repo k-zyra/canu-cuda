@@ -105,7 +105,7 @@ placeUnplacedUsingAllOverlaps(TigVector           &tigs,
 
   //  Do the placing!
 
-#pragma omp parallel for schedule(dynamic, blockSize)
+// #pragma omp parallel for schedule(dynamic, blockSize)
   for (uint32 fid=1; fid<RI->numReads()+1; fid++) {
     bool  enableLog = true;
 

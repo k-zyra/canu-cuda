@@ -549,7 +549,7 @@ TigVector::optimizePositions(const char *prefix, const char *label) {
 
   writeStatus("optimizePositions()--   Initializing positions with %u threads.\n", numThreads);
 
-#pragma omp parallel for schedule(dynamic, tiBlockSize)
+// #pragma omp parallel for schedule(dynamic, tiBlockSize)
   for (uint32 ti=0; ti<tiLimit; ti++) {
     Unitig            *tig = operator[](ti);
     std::set<uint32>   failed;
@@ -575,7 +575,7 @@ TigVector::optimizePositions(const char *prefix, const char *label) {
 
     writeStatus("optimizePositions()--   Recomputing positions, iteration %u, with %u threads.\n", iter+1, numThreads);
 
-#pragma omp parallel for schedule(dynamic, fiBlockSize)
+// #pragma omp parallel for schedule(dynamic, fiBlockSize)
     for (uint32 fi=0; fi<fiLimit; fi++) {
       uint32        ti = inUnitig(fi);
       Unitig       *tig = operator[](ti);
@@ -647,7 +647,7 @@ TigVector::optimizePositions(const char *prefix, const char *label) {
 
   writeStatus("optimizePositions()--   Expanding short reads with %u threads.\n", numThreads);
 
-#pragma omp parallel for schedule(dynamic, tiBlockSize)
+// #pragma omp parallel for schedule(dynamic, tiBlockSize)
   for (uint32 ti=0; ti<tiLimit; ti++) {
     Unitig       *tig = operator[](ti);
 

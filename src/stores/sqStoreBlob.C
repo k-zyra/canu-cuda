@@ -112,7 +112,7 @@ sqStoreBlobReader::getBuffer(sqReadMeta *meta) {
   if (_buffers[file] == NULL) {
     makeBlobName(_storePath, file, _blobName);
 
-#pragma omp critical
+// #pragma omp critical
     //  Fetch from object store, if needed and possible.
     fetchFromObjectStore(_blobName);
 
