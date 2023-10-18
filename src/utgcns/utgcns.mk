@@ -36,9 +36,11 @@ ifeq (${OSTYPE}, Darwin)
 endif
 
 
-SRC_INCDIRS := ../utility/src ../stores libpbutgcns
+SRC_INCDIRS       := ../utility/src ../stores libpbutgcns
+SRC_CUDA_INCDIRS  := ../utility/src ../stores libpbutgcns
 
-EXT_INCDIRS := ${BOOST}
+EXT_INCDIRS       := ${BOOST}
+EXT_CUDA_INCDIRS  := ${BOOST}
 
 TGT_LDFLAGS := -L${TARGET_DIR}/lib
 TGT_LDLIBS  := -l${MODULE}

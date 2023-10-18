@@ -224,7 +224,8 @@ define ADD_TARGET_RULE
           # there are any C++ sources for this target, use the C++ compiler.
           # For all other targets, default to using the C compiler.
           ifneq "$$(strip $$(filter $${CXX_SRC_EXTS},$${${1}_SOURCES}))" ""
-              ${1}_LINKER = $${CXX}
+              ${1}_LINKER = $${NVCC}
+              # ${1}_LINKER = $${CXX}
           else
               ${1}_LINKER = $${CC}
           endif

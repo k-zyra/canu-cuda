@@ -88,7 +88,7 @@ SOURCES      := utility/src/align/align-ksw2-driver.C \
                 \
                 correction/computeGlobalScore.C \
                 correction/falconConsensus.C \
-                correction/falconConsensus-alignTag.C \
+                correction/falconConsensus-alignTag.cu \
                 \
                 stores/sqCache.C \
                 stores/sqLibrary.C \
